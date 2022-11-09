@@ -17,7 +17,7 @@ const port = process.env.PORT || 5000;
 
 app.get('/', (req, res) => res.send('AmarKitchner Server is running!'))
 
-const uir ="mongodb+srv://mxgangstar310:arifbiswas@cluster0.7xyixxj.mongodb.net"
+const uir = process.env.DB_URI;
 
 const client = new MongoClient(uir);
 
@@ -42,6 +42,7 @@ async function run(){
             }
             
         })
+        
         app.get("/services/:id" , async(req,res) =>{
             const id = req.params.id;
             const query ={_id : ObjectID(id)};
@@ -58,14 +59,53 @@ async function run(){
         })
 
         // Reviews API 
+
+        
+
+        //  Id get Review    
         app.get("/reviews/:id" , async(req,res) =>{
             const id = req.params.id;
-            const query ={service_id : id};
-            const cursor =  ReviewsCollection.find(query)
-            const result = await cursor.toArray();
-                res.send(result);
+            let query = {_id : ObjectID(id)};
+                    const result =await  ReviewsCollection.findOne(query)
+                    res.send(result);
         })
 
+        // All reviews 
+        app.get("/reviews" , async(req,res) =>{
+            try {
+                let query ={};
+            const service_id =req.query;
+            console.log(service_id);
+            if(service_id){
+                query = {...service_id}
+                const cursor =  ReviewsCollection.find(query)
+                const result = await cursor.toArray();
+                res.send(result);
+            }
+            const cursor = ReviewsCollection.find(query)
+            const result = await cursor.toArray();
+            res.send(result);
+            } catch (error) {
+                console.log(error);
+            }
+        })
+
+        app.get("/reviews" , async(req,res) =>{
+            const email = req.query;
+            console.log(email);
+            if(email){
+                const query ={...email};
+                const cursor = ReviewsCollection.find(query)
+                const result = await cursor.toArray();
+                res.send(result);
+            }
+            else{
+                res.send({
+                    status : "email not fund"
+                });
+            }
+        })
+        
         app.post("/reviews", async(req , res) =>{
             const reviews = req.body;
             console.log(reviews);
